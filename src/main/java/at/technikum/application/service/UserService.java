@@ -20,7 +20,6 @@ public class UserService {
     }
 
     public String updateProfile(int userId, String body) {
-        //Speicherung (noch simpel)
         return "Neues Profil: " + body;
     }
 

@@ -10,7 +10,6 @@ public class Response {
         this.status = status;
     }
 
-    // safe: wenn kein Status gesetzt ist, OK zurückgeben
     public int getStatusCode() {
         return status != null ? status.getCode() : Status.OK.getCode();
     }
@@ -19,7 +18,6 @@ public class Response {
         return status != null ? status.getMessage() : Status.OK.getMessage();
     }
 
-    // safe: wenn kein ContentType gesetzt ist, text/plain zurückgeben
     public String getContentType() {
         return (contentType != null) ? contentType.getMimeType() : ContentType.TEXT_PLAIN.getMimeType();
     }
@@ -28,7 +26,6 @@ public class Response {
         this.contentType = contentType;
     }
 
-    // safe: leeren Body zurückgeben statt null
     public String getBody() {
         return body != null ? body : "";
     }

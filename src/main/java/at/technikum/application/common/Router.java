@@ -16,13 +16,11 @@ public class Router {
     public Response route(Request request) {
         String path = request.getPath();
 
-        // 1) exakte Route
         Controller exact = routes.get(path);
         if (exact != null) {
             return exact.handle(request);
         }
 
-        // 2) dynamische Routen: sortiere nach Länge (spezifischere zuerst)
         List<Map.Entry<String, Controller>> sorted = routes.entrySet().stream()
                 .sorted(Comparator.comparingInt((Map.Entry<String, Controller> e) -> e.getKey().length()).reversed())
                 .collect(Collectors.toList());
@@ -34,7 +32,6 @@ public class Router {
             }
         }
 
-        // Default: 404-like Echo (Controller kann trotzdem erzeugt werden, hier einfach Response)
         Response echo = new Response();
         echo.setStatus(at.technikum.server.http.Status.NOT_FOUND);
         echo.setContentType(at.technikum.server.http.ContentType.TEXT_PLAIN);
@@ -42,12 +39,10 @@ public class Router {
         return echo;
     }
 
-    // Pattern matching: "/users/{userId}/profile" etc.
     private boolean matchAndExtract(String pattern, String path, Request request) {
         String[] pSegments = pattern.split("/");
         String[] pathSegments = path.split("/");
 
-        // handle leading slash producing empty segment
         List<String> pList = Arrays.stream(pSegments).filter(s -> !s.isEmpty()).collect(Collectors.toList());
         List<String> pathList = Arrays.stream(pathSegments).filter(s -> !s.isEmpty()).collect(Collectors.toList());
 

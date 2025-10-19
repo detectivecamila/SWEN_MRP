@@ -14,7 +14,6 @@ public class AuthRepository {
         users.put(username, password);
     }
 
-    // optional: for testing/auth
     public String findPasswordByUsername(String username) {
         return users.get(username);
     }

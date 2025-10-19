@@ -8,7 +8,6 @@ public class UserRepository {
     private final Map<Integer, String> users = new HashMap<>(); // id -> username
     private final AtomicInteger idCounter = new AtomicInteger(0);
 
-    // legt einen neuen User an und gibt die ID zurück
     public int create(String username) {
         int id = idCounter.incrementAndGet();
         users.put(id, username);

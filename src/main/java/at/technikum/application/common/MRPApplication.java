@@ -17,27 +17,23 @@ public class MRPApplication implements Application {
     public MRPApplication() {
         this.router = new Router();
 
-        // Repositories / Services erzeugen (Single place of composition)
         UserRepository userRepository = new UserRepository();
         UserService userService = new UserService(userRepository);
 
         AuthRepository authRepository = new AuthRepository();
         AuthService authService = new AuthService(authRepository);
 
-        // Controller erzeugen mit DI
         UserController userController = new UserController(userService);
         MediaController mediaController = new MediaController();
         RatingController ratingController = new RatingController();
         AuthController authController = new AuthController(authService);
 
-        // Routen registrieren (Pattern mit Platzhaltern)
         router.addRoute("/users/{userId}/profile", userController);
         router.addRoute("/media/{mediaId}", mediaController);
         router.addRoute("/media/{mediaId}/rate", ratingController);
         router.addRoute("/ratings/{ratingId}/like", ratingController);
         router.addRoute("/api/users/register", authController);
 
-        // optional: Basis-listen
         router.addRoute("/users", userController);
         router.addRoute("/media", mediaController);
         router.addRoute("/ratings", ratingController);

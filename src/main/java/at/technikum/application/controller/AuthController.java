@@ -67,7 +67,6 @@ public class AuthController implements Controller {
         return response;
     }
 
-    // sehr einfacher, toleranter Parser für flaches JSON {"k":"v", ...}
     private Map<String, String> parseSimpleJson(String json) {
         Map<String, String> map = new HashMap<>();
         String s = json.trim();

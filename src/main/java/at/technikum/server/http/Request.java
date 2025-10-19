@@ -37,7 +37,6 @@ public class Request {
         this.body = body;
     }
 
-    //Attribute für dynamische Pfad-Parameter
     public void setAttribute(String key, String value) {
         attributes.put(key, value);
     }
@@ -50,7 +49,6 @@ public class Request {
         return Collections.unmodifiableMap(attributes);
     }
 
-    //Neu: kompakter Debug-String für alle gesetzten Attribute
     public String getAttributesStringIfAny() {
         if (attributes.isEmpty()) return "";
         return attributes.entrySet().stream()

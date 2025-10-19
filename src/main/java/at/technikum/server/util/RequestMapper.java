@@ -14,18 +14,15 @@ public class RequestMapper {
     public Request fromExchange(HttpExchange exchange) {
         Request request = new Request();
 
-        // Methode + Pfad
         request.setMethod(exchange.getRequestMethod());
         URI uri = exchange.getRequestURI();
         request.setPath(uri.getPath());
 
-        // Optional: Query an Path anhängen, falls benötigt
         String rawQuery = uri.getRawQuery();
         if (rawQuery != null && !rawQuery.isEmpty()) {
             request.setPath(request.getPath() + "?" + rawQuery);
         }
 
-        // Request-Body lesen (UTF-8)
         try (InputStream is = exchange.getRequestBody();
              ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             byte[] buffer = new byte[1024];
@@ -38,7 +35,6 @@ public class RequestMapper {
                 request.setBody(body);
             }
         } catch (IOException ignored) {
-            // falls Lesen fehlschlägt: body bleibt null
         }
 
         return request;

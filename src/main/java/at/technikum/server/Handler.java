@@ -24,10 +24,8 @@ public class Handler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         Request request = requestMapper.fromExchange(exchange);
 
-        // hole die Response von der Application (EchoApplication / MRPApplication)
         Response response = application.handle(request);
 
-        // sende die Response an den Client
         byte[] bytes = (response.getBody() == null ? "" : response.getBody()).getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Content-Type", response.getContentType() == null ? "text/plain" : response.getContentType());
         exchange.sendResponseHeaders(response.getStatusCode(), bytes.length);

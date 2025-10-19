@@ -12,7 +12,6 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 public class Handler implements HttpHandler {
-
     private final Application application;
     private final RequestMapper requestMapper;
 
@@ -24,20 +23,16 @@ public class Handler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         Request request = requestMapper.fromExchange(exchange);
-        Response response = application.handle(request);
-        send(exchange, response);
-        // create Request object
-        // give Request to Application
-        // receive Response object
-        // send Response to client
-    }
 
-    private void send(HttpExchange exchange, Response response) throws IOException {
-        exchange.getResponseHeaders().set("Content-Type", response.getContentType());
-        byte[] bytes = response.getBody().getBytes(StandardCharsets.UTF_8);
+        // hole die Response von der Application (EchoApplication / MRPApplication)
+        Response response = application.handle(request);
+
+        // sende die Response an den Client
+        byte[] bytes = (response.getBody() == null ? "" : response.getBody()).getBytes(StandardCharsets.UTF_8);
+        exchange.getResponseHeaders().set("Content-Type", response.getContentType() == null ? "text/plain" : response.getContentType());
         exchange.sendResponseHeaders(response.getStatusCode(), bytes.length);
         try (OutputStream os = exchange.getResponseBody()) {
             os.write(bytes);
-        }
+        } catch (IOException ignored) {}
     }
 }

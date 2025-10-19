@@ -20,18 +20,8 @@ public class Server {
 
     public void start() {
         try {
-            this.httpServer = HttpServer.
-                    create(
-                            new InetSocketAddress(
-                                    "localhost",
-                                    this.port
-                            ),
-                            0
-                    );
-            this.httpServer.createContext(
-                    "/",
-                new Handler(this.application, new RequestMapper())
-            );
+            this.httpServer = HttpServer.create(new InetSocketAddress("localhost", this.port), 0);
+            this.httpServer.createContext("/", new Handler(this.application, new RequestMapper()));
             this.httpServer.start();
         } catch (IOException e) {
             e.printStackTrace();

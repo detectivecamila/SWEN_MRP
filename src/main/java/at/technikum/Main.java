@@ -6,10 +6,8 @@ import at.technikum.server.Server;
 public class Main {
     public static void main(String[] args) {
 
-        Server server = new Server(
-            8080,
-            new EchoApplication()
-        );
+        Server server = new Server(8080, new EchoApplication());
+        System.out.println("TEST");
         server.start();
     }
 }

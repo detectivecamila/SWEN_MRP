@@ -1,50 +1,70 @@
 package at.technikum.application.common;
 
-import at.technikum.application.controller.MediaController;
-import at.technikum.application.controller.UserController;
-import at.technikum.application.controller.RatingController;
-import at.technikum.application.repository.UserRepository;
-import at.technikum.application.service.UserService;
 import at.technikum.server.http.Request;
 import at.technikum.server.http.Response;
-import at.technikum.server.http.Status;
-import at.technikum.server.http.ContentType;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Router {
     private final Map<String, Controller> routes = new HashMap<>();
-    private final UserRepository userRepository = new UserRepository();
-    private final UserService userService = new UserService(userRepository);
 
-    public void addRoute(String path, Controller controller) {
-        routes.put(path, controller);
-    }
-
-    public Router() {
-        routes.put("/users", new UserController(userService));
-        routes.put("/media", new MediaController());
-        routes.put("/ratings", new RatingController());
+    public void addRoute(String pathPattern, Controller controller) {
+        routes.put(pathPattern, controller);
     }
 
     public Response route(Request request) {
         String path = request.getPath();
 
-        if (path.startsWith("/users/")) {
-            return new UserController(userService).handle(request);
-        }
-        if (path.startsWith("/media/")) {
-            return new MediaController().handle(request);
-        }
-        if (path.startsWith("/ratings/")) {
-            return new RatingController().handle(request);
+        // 1) exakte Route
+        Controller exact = routes.get(path);
+        if (exact != null) {
+            return exact.handle(request);
         }
 
+        // 2) dynamische Routen: sortiere nach Länge (spezifischere zuerst)
+        List<Map.Entry<String, Controller>> sorted = routes.entrySet().stream()
+                .sorted(Comparator.comparingInt((Map.Entry<String, Controller> e) -> e.getKey().length()).reversed())
+                .collect(Collectors.toList());
+
+        for (Map.Entry<String, Controller> entry : sorted) {
+            String pattern = entry.getKey();
+            if (matchAndExtract(pattern, path, request)) {
+                return entry.getValue().handle(request);
+            }
+        }
+
+        // Default: 404-like Echo (Controller kann trotzdem erzeugt werden, hier einfach Response)
         Response echo = new Response();
-        echo.setStatus(Status.OK);
-        echo.setContentType(ContentType.TEXT_PLAIN);
-        echo.setBody("Echo: " + path + " - Hat funktioniert");
+        echo.setStatus(at.technikum.server.http.Status.NOT_FOUND);
+        echo.setContentType(at.technikum.server.http.ContentType.TEXT_PLAIN);
+        echo.setBody("error: Not Found: " + path);
         return echo;
+    }
+
+    // Pattern matching: "/users/{userId}/profile" etc.
+    private boolean matchAndExtract(String pattern, String path, Request request) {
+        String[] pSegments = pattern.split("/");
+        String[] pathSegments = path.split("/");
+
+        // handle leading slash producing empty segment
+        List<String> pList = Arrays.stream(pSegments).filter(s -> !s.isEmpty()).collect(Collectors.toList());
+        List<String> pathList = Arrays.stream(pathSegments).filter(s -> !s.isEmpty()).collect(Collectors.toList());
+
+        if (pList.size() != pathList.size()) return false;
+
+        for (int i = 0; i < pList.size(); i++) {
+            String pSeg = pList.get(i);
+            String pathSeg = pathList.get(i);
+            if (pSeg.startsWith("{") && pSeg.endsWith("}")) {
+                String name = pSeg.substring(1, pSeg.length() - 1);
+                request.setAttribute(name, pathSeg);
+            } else {
+                if (!pSeg.equals(pathSeg)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

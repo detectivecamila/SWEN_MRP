@@ -7,6 +7,8 @@ import at.technikum.server.http.Response;
 import at.technikum.server.http.Status;
 import at.technikum.server.http.ContentType;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,7 +37,14 @@ public class AuthController implements Controller {
             return response;
         }
 
-        Map<String, String> data = parseSimpleJson(body);
+        Map<String, String> data;
+        String trimmed = body.trim();
+        if (trimmed.startsWith("{")) {
+            data = parseSimpleJson(trimmed);
+        } else {
+            data = parseFormEncoded(trimmed);
+        }
+
         String username = data.get("username");
         String password = data.get("password");
 
@@ -63,6 +72,8 @@ public class AuthController implements Controller {
         Map<String, String> map = new HashMap<>();
         String s = json.trim();
         if (s.startsWith("{") && s.endsWith("}")) s = s.substring(1, s.length() - 1);
+        if (s.trim().isEmpty()) return map;
+
         String[] pairs = s.split(",");
         for (String p : pairs) {
             String[] kv = p.split(":", 2);
@@ -74,10 +85,31 @@ public class AuthController implements Controller {
         return map;
     }
 
+    private Map<String, String> parseFormEncoded(String body) {
+        Map<String, String> map = new HashMap<>();
+        String[] pairs = body.split("&");
+        for (String p : pairs) {
+            String[] kv = p.split("=", 2);
+            if (kv.length != 2) continue;
+            String key = urlDecode(kv[0]);
+            String val = urlDecode(kv[1]);
+            map.put(key, val);
+        }
+        return map;
+    }
+
     private String stripQuotes(String s) {
         if (s.startsWith("\"") && s.endsWith("\"") && s.length() >= 2) {
             return s.substring(1, s.length() - 1);
         }
         return s;
+    }
+
+    private String urlDecode(String s) {
+        try {
+            return URLDecoder.decode(s, StandardCharsets.UTF_8.name());
+        } catch (Exception e) {
+            return s;
+        }
     }
 }

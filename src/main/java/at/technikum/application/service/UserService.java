@@ -11,12 +11,16 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public Map<String, String> getProfile(int userId) {  //statt Map<String, String> -> UserProfile
-        return null;
+    public Map<String, String> getProfile(int userId) {
+        return userRepository.findProfileById(userId);
+    }
+
+    public int createUser(String username) {
+        return userRepository.create(username);
     }
 
     public String updateProfile(int userId, String body) {
-        //Speicherung
+        //Speicherung (noch simpel)
         return "Neues Profil: " + body;
     }
 

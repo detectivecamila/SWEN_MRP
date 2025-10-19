@@ -1,13 +1,12 @@
 package at.technikum;
 
-import at.technikum.application.echo.EchoApplication;
+import at.technikum.application.common.MRPApplication;
 import at.technikum.server.Server;
 
 public class Main {
     public static void main(String[] args) {
-
-        Server server = new Server(8080, new EchoApplication());
-        System.out.println("TEST");
+        Server server = new Server(8080, new MRPApplication());
+        System.out.println("Server starting on port 8080");
         server.start();
     }
 }

@@ -2,11 +2,13 @@ package at.technikum.application.common;
 
 import at.technikum.server.http.Request;
 import at.technikum.server.http.Response;
+import at.technikum.server.http.Status;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Router {
+
     private final Map<String, Controller> routes = new HashMap<>();
 
     public void addRoute(String pathPattern, Controller controller) {
@@ -16,48 +18,51 @@ public class Router {
     public Response route(Request request) {
         String path = request.getPath();
 
-        Controller exact = routes.get(path);
-        if (exact != null) {
-            return exact.handle(request);
+        //Exakter Match
+        if (routes.containsKey(path)) {
+            return routes.get(path).handle(request);
         }
 
-        List<Map.Entry<String, Controller>> sorted = routes.entrySet().stream()
-                .sorted(Comparator.comparingInt((Map.Entry<String, Controller> e) -> e.getKey().length()).reversed())
-                .collect(Collectors.toList());
-
-        for (Map.Entry<String, Controller> entry : sorted) {
-            String pattern = entry.getKey();
+        //Match mit {param}
+        for (String pattern : routes.keySet()) {
             if (matchAndExtract(pattern, path, request)) {
-                return entry.getValue().handle(request);
+                return routes.get(pattern).handle(request);
             }
         }
 
-        Response echo = new Response();
-        echo.setStatus(at.technikum.server.http.Status.NOT_FOUND);
-        echo.setContentType(at.technikum.server.http.ContentType.TEXT_PLAIN);
-        echo.setBody("error: Not Found: " + path);
-        return echo;
+        Response response = new Response();
+        response.setStatus(Status.NOT_FOUND);
+        response.setBody("Not Found: " + path);
+        return response;
     }
 
     private boolean matchAndExtract(String pattern, String path, Request request) {
-        String[] pSegments = pattern.split("/");
-        String[] pathSegments = path.split("/");
 
-        List<String> pList = Arrays.stream(pSegments).filter(s -> !s.isEmpty()).collect(Collectors.toList());
-        List<String> pathList = Arrays.stream(pathSegments).filter(s -> !s.isEmpty()).collect(Collectors.toList());
+        String[] p = pattern.split("/");
+        String[] a = path.split("/");
 
-        if (pList.size() != pathList.size()) return false;
+        if (p.length != a.length) {
+            return false;
+        }
 
-        for (int i = 0; i < pList.size(); i++) {
-            String pSeg = pList.get(i);
-            String pathSeg = pathList.get(i);
-            if (pSeg.startsWith("{") && pSeg.endsWith("}")) {
-                String name = pSeg.substring(1, pSeg.length() - 1);
-                request.setAttribute(name, pathSeg);
-            } else {
-                if (!pSeg.equals(pathSeg)) {
-                    return false;
+        for (int i = 0; i < p.length; i++) {
+
+            //Platzhalter
+            if (p[i].startsWith("{") && p[i].endsWith("}")) {
+                String name = p[i].substring(1, p[i].length() - 1);
+
+                //Nur bestimmte Platzhalter müssen Zahlen sein
+                if (name.equals("mediaId") || name.equals("userId") || name.equals("ratingId")) {
+                    if (!a[i].matches("\\d+")) return false;
                 }
+
+                //Token oder andere Strings können beliebig sein
+                request.setAttribute(name, a[i]);
+            }
+
+            //Fixer Pfadteil
+            else if (!p[i].equals(a[i])) {
+                return false;
             }
         }
         return true;

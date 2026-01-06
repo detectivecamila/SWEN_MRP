@@ -1,6 +1,6 @@
 package at.technikum.server;
 
-import at.technikum.application.common.Application;
+import at.technikum.application.common.Controller;
 import at.technikum.server.http.Request;
 import at.technikum.server.http.Response;
 import at.technikum.server.util.RequestMapper;
@@ -12,10 +12,10 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 public class Handler implements HttpHandler {
-    private final Application application;
+    private final Controller application;
     private final RequestMapper requestMapper;
 
-    public Handler(Application application, RequestMapper requestMapper) {
+    public Handler(Controller application, RequestMapper requestMapper) {
         this.application = application;
         this.requestMapper = requestMapper;
     }

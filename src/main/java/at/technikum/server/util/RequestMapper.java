@@ -23,8 +23,7 @@ public class RequestMapper {
             request.setPath(request.getPath() + "?" + rawQuery);
         }
 
-        try (InputStream is = exchange.getRequestBody();
-             ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        try (InputStream is = exchange.getRequestBody(); ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             byte[] buffer = new byte[1024];
             int r;
             while ((r = is.read(buffer)) != -1) {

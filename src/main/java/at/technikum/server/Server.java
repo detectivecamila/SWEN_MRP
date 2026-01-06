@@ -1,6 +1,6 @@
 package at.technikum.server;
 
-import at.technikum.application.common.Application;
+import at.technikum.application.common.Controller;
 import at.technikum.server.util.RequestMapper;
 import com.sun.net.httpserver.HttpServer;
 
@@ -11,9 +11,9 @@ public class Server {
 
     private HttpServer httpServer;
     private final int port;
-    private final Application application;
+    private final Controller application;
 
-    public Server(int port, Application application) {
+    public Server(int port, Controller application) {
         this.port = port;
         this.application = application;
     }
